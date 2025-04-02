@@ -8,6 +8,8 @@ import {
   Pressable,
 } from "react-native";
 
+import { Picker } from "@react-native-picker/picker";
+
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -16,13 +18,18 @@ import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeabl
 type Task = {
   id: string;
   description: string;
+  category: string;
   completed: boolean;
 };
 
-export default function Index() {
+export default function HomeScreen() {
+  const categories = ["Work", "Personal", "Shopping"];
+  const filters = ["All", ...categories];
   // Task states for UI
   const [taskString, setTaskString] = useState<string>("");
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
+  const [filteredCategory, setFilteredCategory] = useState(filters[0]);
 
   // On app startup, load all tasks
   useEffect(() => {
@@ -59,6 +66,7 @@ export default function Index() {
       const newTask: Task = {
         id: Date.now().toString(),
         description: taskString,
+        category: selectedCategory,
         completed: false,
       };
       const newTasks = [...tasks, newTask];
@@ -91,6 +99,27 @@ export default function Index() {
     );
   };
 
+  // Filtered tasks based on categories
+  const filterTasks = async (filter: string) => {
+    try {
+      setFilteredCategory(filter);
+
+      // If "All is selected", reload all tasks from AsyncStorage
+      if (filter === categories[0]) { 
+        loadTasks();
+      } else {
+        const savedTasks = await AsyncStorage.getItem("tasks");
+        if (savedTasks) {
+          const allTasks: Task[] = JSON.parse(savedTasks);
+          const filteredTasks = allTasks.filter((task) => task.category === filter);
+          setTasks(filteredTasks);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to filter tasks: ", error);
+    }
+  };
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <View>
@@ -100,7 +129,23 @@ export default function Index() {
           onChangeText={setTaskString}
           style={styles.input}
         />
+        <Picker
+          selectedValue={selectedCategory}
+          onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+        >
+          {categories.map((category) => (
+            <Picker.Item key={category} label={category} value={category} />
+          ))}
+        </Picker>
         <Button title="Add Task" onPress={addTask} />
+        <Picker
+          selectedValue={filteredCategory}
+          onValueChange={(newFilter) => filterTasks(newFilter)}
+        >
+          {filters.map((filter) => (
+            <Picker.Item key={filter} label={filter} value={filter} />
+          ))}
+        </Picker>
         <FlatList
           data={tasks}
           keyExtractor={(item) => item.id}
@@ -108,20 +153,24 @@ export default function Index() {
             <ReanimatedSwipeable
               renderRightActions={() => renderRightActions(item.id)}
               onSwipeableOpen={() => removeTask(item.id)}
+              testID={`swipeable-${item.description}`}
             >
               <View style={styles.taskContainer}>
                 <Text style={styles.taskText}>{item.description}</Text>
+                {/* <Text style={styles.taskText}>{item.category}</Text> */}
 
                 <View style={styles.buttonsContainer}>
                   <Pressable
                     style={[styles.checkbox, item.completed && styles.checked]}
                     onPress={() => toggleTaskCompletion(item.id)}
+                    testID={`checkbox-${item.description}`}
                   >
                     {item.completed && <Text style={styles.checkmark}>✔</Text>}
                   </Pressable>
                   <Pressable
                     style={styles.deleteButton}
                     onPress={() => removeTask(item.id)}
+                    testID={`delete-${item.description}`}
                   >
                     <Text style={styles.checkmark}>X</Text>
                   </Pressable>
@@ -151,7 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     backgroundColor: "white",
     padding: 15,
-    marginVertical: 5,
+    marginVertical: 10,
   },
   taskText: {
     fontSize: 18,
@@ -162,7 +211,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderWidth: 2,
-    backgroundColor: 'red',
+    backgroundColor: "red",
     borderColor: "#333",
     borderRadius: 5,
     justifyContent: "center",
@@ -172,7 +221,7 @@ const styles = StyleSheet.create({
   deleteContainer: {
     backgroundColor: "red",
     padding: 15,
-    marginVertical: 5,
+    marginVertical: 10,
     justifyContent: "center",
   },
   deleteText: {
@@ -181,8 +230,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   buttonsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
+    flexDirection: "row",
+    alignItems: "center",
   },
   checkbox: {
     width: 30,

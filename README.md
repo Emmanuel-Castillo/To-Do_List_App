@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
@@ -49,7 +48,3 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-=======
-# To-Do_List_App
-To-Do List application designed using React Native.
->>>>>>> 2e0ed8dd7b1d283fcc01d4b00345f1476c6496b1
