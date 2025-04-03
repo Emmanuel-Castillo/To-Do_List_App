@@ -5,7 +5,6 @@ import {
   Button,
   FlatList,
   Text,
-  Pressable,
 } from "react-native";
 
 import { Picker } from "@react-native-picker/picker";
@@ -13,9 +12,10 @@ import { Picker } from "@react-native-picker/picker";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import Task from "./components/Task";
 
-type Task = {
+// Defining type for tasks
+export type TaskType = {
   id: string;
   description: string;
   category: string;
@@ -23,11 +23,13 @@ type Task = {
 };
 
 export default function HomeScreen() {
+  // Hardcoded category and filter array data
   const categories = ["Work", "Personal", "Shopping"];
   const filters = ["All", ...categories];
+
   // Task states for UI
   const [taskString, setTaskString] = useState<string>("");
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<TaskType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState(categories[0]);
   const [filteredCategory, setFilteredCategory] = useState(filters[0]);
 
@@ -49,7 +51,7 @@ export default function HomeScreen() {
 
   // Saves tasks to AsyncStorage
   // Sets tasks when saved
-  const saveTasks = async (newTasks: Task[]) => {
+  const saveTasks = async (newTasks: TaskType[]) => {
     try {
       await AsyncStorage.setItem("tasks", JSON.stringify(newTasks));
       setTasks(newTasks);
@@ -63,7 +65,7 @@ export default function HomeScreen() {
   const addTask = () => {
     // Only add task if newTask is not an empty string
     if (taskString.trim()) {
-      const newTask: Task = {
+      const newTask: TaskType = {
         id: Date.now().toString(),
         description: taskString,
         category: selectedCategory,
@@ -110,7 +112,7 @@ export default function HomeScreen() {
       } else {
         const savedTasks = await AsyncStorage.getItem("tasks");
         if (savedTasks) {
-          const allTasks: Task[] = JSON.parse(savedTasks);
+          const allTasks: TaskType[] = JSON.parse(savedTasks);
           const filteredTasks = allTasks.filter((task) => task.category === filter);
           setTasks(filteredTasks);
         }
@@ -150,33 +152,12 @@ export default function HomeScreen() {
           data={tasks}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <ReanimatedSwipeable
-              renderRightActions={() => renderRightActions(item.id)}
-              onSwipeableOpen={() => removeTask(item.id)}
-              testID={`swipeable-${item.description}`}
-            >
-              <View style={styles.taskContainer}>
-                <Text style={styles.taskText}>{item.description}</Text>
-                {/* <Text style={styles.taskText}>{item.category}</Text> */}
-
-                <View style={styles.buttonsContainer}>
-                  <Pressable
-                    style={[styles.checkbox, item.completed && styles.checked]}
-                    onPress={() => toggleTaskCompletion(item.id)}
-                    testID={`checkbox-${item.description}`}
-                  >
-                    {item.completed && <Text style={styles.checkmark}>✔</Text>}
-                  </Pressable>
-                  <Pressable
-                    style={styles.deleteButton}
-                    onPress={() => removeTask(item.id)}
-                    testID={`delete-${item.description}`}
-                  >
-                    <Text style={styles.checkmark}>X</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </ReanimatedSwipeable>
+            <Task
+             item={item}
+             removeTask={removeTask}
+             renderRightActions={renderRightActions}
+             toggleTaskCompletion={toggleTaskCompletion}
+            />
           )}
         />
       </View>
@@ -194,30 +175,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 5,
   },
-  taskContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "white",
-    padding: 15,
-    marginVertical: 10,
-  },
-  taskText: {
-    fontSize: 18,
-    maxWidth: 240,
-    flexWrap: "wrap",
-  },
-  deleteButton: {
-    width: 30,
-    height: 30,
-    borderWidth: 2,
-    backgroundColor: "red",
-    borderColor: "#333",
-    borderRadius: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
   deleteContainer: {
     backgroundColor: "red",
     padding: 15,
@@ -228,26 +185,5 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
-  },
-  buttonsContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkbox: {
-    width: 30,
-    height: 30,
-    borderWidth: 2,
-    borderColor: "#333",
-    borderRadius: 5,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  checked: {
-    backgroundColor: "#4CAF50",
-  },
-  checkmark: {
-    color: "white",
-    fontWeight: "bold",
-  },
+  }
 });

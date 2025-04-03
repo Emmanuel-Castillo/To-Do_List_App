@@ -1,4 +1,4 @@
-import { fireEvent, render, act, waitFor } from "@testing-library/react-native";
+import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import HomeScreen from "@/app/index";
 
@@ -40,10 +40,11 @@ describe("<HomeScreen />", () => {
     const addButton = getByText("Add Task");
     fireEvent.press(addButton);
 
+    // Check if created
     await waitFor(() => getByText("Test Task"));
-
     expect(getByText("Test Task")).toBeTruthy();
 
+    // Grabbing checkbox of task's Task component using testID
     const checkbox = getByTestId("checkbox-Test Task");
     fireEvent.press(checkbox);
 
@@ -71,14 +72,15 @@ describe("<HomeScreen />", () => {
     const addButton = getByText("Add Task");
     fireEvent.press(addButton);
 
+    // Check if created
     await waitFor(() => getByText("Test Task"));
-
     expect(getByText("Test Task")).toBeTruthy();
 
+    // Grabbing the delete pressable of the task's Task components using testID
     const deletePressable = getByTestId("delete-Test Task");
     fireEvent.press(deletePressable);
 
-    // Wait for the new task to appear
+    // Wait for task to be removed
     await waitFor(() => expect(queryByText("Test Task")).toBeFalsy());
   });
 });
