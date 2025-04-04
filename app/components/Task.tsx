@@ -26,8 +26,6 @@ function Task({
     >
       <View style={styles.taskContainer}>
         <Text style={styles.taskText}>{item.description}</Text>
-        {/* <Text style={styles.taskText}>{item.category}</Text> */}
-
         <View style={styles.buttonsContainer}>
           <Pressable
             style={[styles.checkbox, item.completed && styles.checked]}
@@ -62,15 +60,13 @@ const styles = StyleSheet.create({
   },
   taskText: {
     fontSize: 18,
-    maxWidth: 240,
+    width: 200,
     flexWrap: "wrap",
   },
   deleteButton: {
     width: 30,
     height: 30,
-    borderWidth: 2,
     backgroundColor: "red",
-    borderColor: "#333",
     borderRadius: 5,
     justifyContent: "center",
     alignItems: "center",
@@ -92,6 +88,7 @@ const styles = StyleSheet.create({
   },
   checked: {
     backgroundColor: "#4CAF50",
+    borderColor: "#4CAF50",
   },
   checkmark: {
     color: "white",
